@@ -44,7 +44,18 @@ public class Todo {
 
   private void checktask(String[] args) {
     if (args.length>1) {
-
+      if(isIndexNumber(args)) {
+        int indexToCheck = indexNumber(args);
+        if (indexToCheck > 0 && indexToCheck <= this.todoList.size()) {
+          this.todoList.get(indexToCheck).isChecked = true;
+        } else {
+          System.out.println("Unable to check: index is out of bound");
+        }
+      } else {
+        System.out.println("Unable to check: index is not a number");
+      }
+    } else {
+      System.out.println("Unable to check: no index provided");
     }
   }
 
