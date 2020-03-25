@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Todo {
-  List<String> todoList;
+  List<TodoElement> todoList;
   String filePath;
   boolean fileIsReadable;
 
@@ -19,8 +19,8 @@ public class Todo {
   }
 
   public static void main(String[] args) {
-
-    Todo myTodoList = new Todo("./src/todo/csv/todo-data.csv");
+    System.out.println(args[0]);
+    Todo myTodoList = new Todo("./csv/todo-data.csv");
     myTodoList.readFile();
 
     if (args.length == 0) {
@@ -31,23 +31,45 @@ public class Todo {
         myTodoList.listTasks();
       } else if (args[0].equals("-a")) {
         myTodoList.addNewTask(args);
-      } else if (args[0].equals(("-r"))) {
+      } else if (args[0].equals("-r")) {
         myTodoList.removeTask(args);
+      } else if (args[0].equals("-c")) {
+        myTodoList.checktask(args);
+      } else {
+        System.out.println("Unsupported argument");
+        printUsage();
       }
     }
   }
 
-  private void removeTask(String[] args) {
-    int indexToRemove = 0;
+  private void checktask(String[] args) {
+    if (args.length>1) {
+
+    }
+  }
+
+  public static boolean isIndexNumber(String[] args) {
     boolean isIndexNumber;
     try {
-      indexToRemove = Integer.parseInt(args[1]);
+      int temp = Integer.parseInt(args[1]);
       isIndexNumber = true;
     } catch (NumberFormatException e) {
       isIndexNumber = false;
     }
+    return isIndexNumber;
+  }
+
+  public int indexNumber(String[] args) {
+    if (isIndexNumber(args)){
+      return Integer.parseInt(args[1]);
+    }
+    return -1;
+  }
+
+  private void removeTask(String[] args) {
     if (args.length > 1) {
-      if (isIndexNumber) {
+      if (isIndexNumber(args)) {
+        int indexToRemove = indexNumber(args);
         if (indexToRemove > 0 && indexToRemove <= this.todoList.size()) {
           this.todoList.remove(indexToRemove - 1);
           this.writeFile();
@@ -65,7 +87,11 @@ public class Todo {
   public void listTasks() {
     if (!this.todoList.isEmpty()) {
       for (int i = 1; i <= this.todoList.size(); i++) {
-        System.out.println(i + " - " + this.todoList.get(i - 1));
+        char tempCheck = ' ';
+        if (this.todoList.get(i-1).isChecked) {
+          tempCheck = 'x';
+        }
+        System.out.println(i + " - [" + tempCheck + "] " + this.todoList.get(i - 1).description);
       }
     } else {
       System.out.println("No todos for today! :)");
@@ -74,7 +100,7 @@ public class Todo {
 
   public void addNewTask(String[] args) {
     if (args.length > 1) {
-      this.todoList.add(args[1]);
+      this.todoList.add(new TodoElement(args[1]));
       this.writeFile();
       System.out.println("New task succesfully added:");
       this.listTasks();
@@ -88,8 +114,16 @@ public class Todo {
 
   public void writeFile() {
     Path path = Paths.get(this.filePath);
+    List<String> toWrite = new ArrayList<>();
+    for (TodoElement todoElement : this.todoList) {
+      char tempChecked = ' ';
+      if (todoElement.isChecked) {
+        tempChecked = 'x';
+      }
+      toWrite.add(tempChecked + ";" + todoElement.description);
+    }
     try {
-      Files.write(path, this.todoList);
+      Files.write(path, toWrite);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -98,9 +132,17 @@ public class Todo {
 
   public void readFile() {
     Path path = Paths.get(this.filePath);
+    List<String> rawLines = new ArrayList<>();
     try {
-      this.todoList = Files.readAllLines(path);
+      rawLines = Files.readAllLines(path);
       this.fileIsReadable = true;
+      for (String rawLine : rawLines) {
+        boolean tempCheck = false;
+        if (rawLine.split(";", 2)[0].equals("x")) {
+          tempCheck = true;
+        }
+        this.todoList.add(new TodoElement(rawLine.split(";", 2)[1], tempCheck));
+      }
     } catch (IOException e) {
       fileIsReadable = false;
     }
