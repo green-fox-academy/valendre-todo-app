@@ -32,9 +32,9 @@ public class Todo {
       } else if (args[0].equals("-a")) {
         myTodoList.addNewTask(args);
       } else if (args[0].equals("-r")) {
-        myTodoList.removeTask(args);
+        myTodoList.modifyTask("remove", args);
       } else if (args[0].equals("-c")) {
-        myTodoList.checktask(args);
+        myTodoList.modifyTask("check", args);
       } else {
         System.out.println("Unsupported argument");
         printUsage();
@@ -42,20 +42,25 @@ public class Todo {
     }
   }
 
-  private void checktask(String[] args) {
-    if (args.length>1) {
-      if(isIndexNumber(args)) {
+  private void modifyTask(String typeOfModification, String[] args) {
+    String errorSout = "Unable to " + typeOfModification + ": ";
+    if (args.length > 1) {
+      if (isIndexNumber(args)) {
         int indexToCheck = indexNumber(args);
         if (indexToCheck > 0 && indexToCheck <= this.todoList.size()) {
-          this.todoList.get(indexToCheck).isChecked = true;
+          if (typeOfModification.equals("check")) {
+            this.todoList.get(indexToCheck).isChecked = true;
+          } else if (typeOfModification.equals("remove")) {
+            this.todoList.get(indexToCheck).isChecked = true;
+          }
         } else {
-          System.out.println("Unable to check: index is out of bound");
+          System.out.println(errorSout + "index is out of bound");
         }
       } else {
-        System.out.println("Unable to check: index is not a number");
+        System.out.println(errorSout + "index is not a number");
       }
     } else {
-      System.out.println("Unable to check: no index provided");
+      System.out.println(errorSout + "no index provided");
     }
   }
 
@@ -71,35 +76,17 @@ public class Todo {
   }
 
   public int indexNumber(String[] args) {
-    if (isIndexNumber(args)){
+    if (isIndexNumber(args)) {
       return Integer.parseInt(args[1]);
     }
     return -1;
-  }
-
-  private void removeTask(String[] args) {
-    if (args.length > 1) {
-      if (isIndexNumber(args)) {
-        int indexToRemove = indexNumber(args);
-        if (indexToRemove > 0 && indexToRemove <= this.todoList.size()) {
-          this.todoList.remove(indexToRemove - 1);
-          this.writeFile();
-        } else {
-          System.out.println("Unable to remove: index is out of bound");
-        }
-      } else {
-        System.out.println("Unable to remove: index is not a number");
-      }
-    } else {
-      System.out.println("Unable to remove: no index provided");
-    }
   }
 
   public void listTasks() {
     if (!this.todoList.isEmpty()) {
       for (int i = 1; i <= this.todoList.size(); i++) {
         char tempCheck = ' ';
-        if (this.todoList.get(i-1).isChecked) {
+        if (this.todoList.get(i - 1).isChecked) {
           tempCheck = 'x';
         }
         System.out.println(i + " - [" + tempCheck + "] " + this.todoList.get(i - 1).description);
@@ -119,8 +106,6 @@ public class Todo {
       System.out.println("Unable to add: no task provided");
       printUsage();
     }
-
-
   }
 
   public void writeFile() {
@@ -138,7 +123,6 @@ public class Todo {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
   }
 
   public void readFile() {
