@@ -19,8 +19,7 @@ public class Todo {
   }
 
   public static void main(String[] args) {
-    System.out.println(args[0]);
-    Todo myTodoList = new Todo("./csv/todo-data.csv");
+    Todo myTodoList = new Todo("csv/todo-data.csv");
     myTodoList.readFile();
 
     if (args.length == 0) {
@@ -49,9 +48,11 @@ public class Todo {
         int indexToCheck = indexNumber(args);
         if (indexToCheck > 0 && indexToCheck <= this.todoList.size()) {
           if (typeOfModification.equals("check")) {
-            this.todoList.get(indexToCheck).isChecked = true;
+            this.todoList.get(indexToCheck-1).isChecked = true;
+            this.writeFile();
           } else if (typeOfModification.equals("remove")) {
-            this.todoList.get(indexToCheck).isChecked = true;
+            this.todoList.remove(indexToCheck-1);
+            this.writeFile();
           }
         } else {
           System.out.println(errorSout + "index is out of bound");
@@ -139,6 +140,7 @@ public class Todo {
         this.todoList.add(new TodoElement(rawLine.split(";", 2)[1], tempCheck));
       }
     } catch (IOException e) {
+      e.printStackTrace();
       fileIsReadable = false;
     }
   }
